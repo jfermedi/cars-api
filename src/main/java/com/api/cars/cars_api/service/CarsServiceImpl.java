@@ -2,12 +2,14 @@ package com.api.cars.cars_api.service;
 
 import com.api.cars.cars_api.model.Cars;
 import com.api.cars.cars_api.repository.CarsRepository;
+import com.api.cars.cars_api.validator.ValidationFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Service
@@ -15,6 +17,7 @@ public class CarsServiceImpl implements CarsService{
 
  @Autowired
  CarsRepository carsRepository;
+ ValidationFields validationFields;
     @Override
     public List<Cars> getAllCars() {
         return carsRepository.findAll();
@@ -22,6 +25,12 @@ public class CarsServiceImpl implements CarsService{
 
     @Override
     public Cars getSpecificCar(String carId) {
+        validationFields = new ValidationFields();
+       Optional<Cars> carToBeFound ;
+        if(validationFields.validateId(carId)){
+            carToBeFound = carsRepository.findById(Integer.parseInt(carId));
+            return carToBeFound.get();
+        }
         return null;
     }
 

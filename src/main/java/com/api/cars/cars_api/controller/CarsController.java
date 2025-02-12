@@ -27,7 +27,7 @@ public class CarsController {
     }
 
     @PostMapping("/createCar/{carBrand}/{carVersion}")
-    ResponseEntity<Cars> createANewCar(@PathVariable String carBrand, @PathVariable String carVersion){
+    ResponseEntity<?> createANewCar(@PathVariable String carBrand, @PathVariable String carVersion){
         return carsService.createNewCar(carBrand, carVersion);
     }
 

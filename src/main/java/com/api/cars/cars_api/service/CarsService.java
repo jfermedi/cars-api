@@ -12,7 +12,7 @@ public interface CarsService {
 
     Cars getSpecificCar(String carId);
 
-    ResponseEntity<Cars> createNewCar(String carBrand, String version);
+    ResponseEntity<?> createNewCar(String carBrand, String version);
 
     String deleteSpecificCar(String carId);
 

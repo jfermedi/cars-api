@@ -6,9 +6,12 @@ import com.api.cars.cars_api.model.Version;
 import com.api.cars.cars_api.repository.CarsRepository;
 import com.api.cars.cars_api.validator.ValidationFields;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +40,7 @@ public class CarsServiceImpl implements CarsService{
     }
 
     @Override
-    public ResponseEntity<Cars> createNewCar(String carBrand, String version) {
+    public ResponseEntity<?> createNewCar(String carBrand, String version) {
         validationFields = new ValidationFields();
         Cars carToBeCreated = null;
         if(validationFields.validateCarBrand(carBrand) && validationFields.validateCarVersion(version)) {
@@ -46,8 +49,12 @@ public class CarsServiceImpl implements CarsService{
           String carVersionFinal = defineVersion(version);
              carToBeCreated = new Cars(carBrandFinal.name(),price ,carVersionFinal);
             carsRepository.save(carToBeCreated);
+            return ResponseEntity.status(HttpStatus.CREATED).body(carToBeCreated);
+        }else{
+            Map<String, String> errorResponse = new HashMap<String, String>();
+            errorResponse.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
-        return null;
     }
 
 

@@ -10,4 +10,28 @@ public class ValidationFields {
         }
         return true;
     }
+
+    public boolean validateCarBrand(String carBrand) {
+       boolean result;
+        try {
+            Integer number = Integer.parseInt(carBrand);
+                result = true;
+            }
+        catch (NumberFormatException e) {
+            result = false;
+        }
+        return result;
+    }
+
+    public boolean validateCarVersion(String version) {
+        boolean result;
+        try {
+            Integer number = Integer.parseInt(version);
+            result = true;
+        } catch (NumberFormatException e) {
+            result = false;
+        }
+
+        return result;
+    }
 }

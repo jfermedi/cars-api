@@ -12,13 +12,13 @@ public class Cars {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer carId;
     String brand;
-    Double price;
+    Float price;
     String version;
 
 
     public Cars(){}
 
-    public Cars(String brand, Double price, String version) {
+    public Cars(String brand, Float price, String version) {
         this.brand = brand;
         this.price = price;
         this.version = version;
@@ -36,11 +36,11 @@ public class Cars {
         this.brand = brand;
     }
 
-    public Double getPrice() {
+    public Float getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(Float price) {
         this.price = price;
     }
 

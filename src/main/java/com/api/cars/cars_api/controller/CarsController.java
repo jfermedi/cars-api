@@ -32,7 +32,7 @@ public class CarsController {
     }
 
     @DeleteMapping("/deleteCar/{carId}")
-    String deleteACar(@PathVariable String carId){
+    ResponseEntity<?> deleteACar(@PathVariable String carId){
         return carsService.deleteSpecificCar(carId);
     }
 

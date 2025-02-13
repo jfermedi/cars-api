@@ -7,7 +7,6 @@ import com.api.cars.cars_api.repository.CarsRepository;
 import com.api.cars.cars_api.validator.ValidationFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +21,7 @@ public class CarsServiceImpl implements CarsService{
 
  @Autowired
  CarsRepository carsRepository;
- ValidationFields validationFields;
+ ValidationFields validationFields = new ValidationFields();
     @Override
     public List<Cars> getAllCars() {
         return carsRepository.findAll();
@@ -30,7 +29,6 @@ public class CarsServiceImpl implements CarsService{
 
     @Override
     public Cars getSpecificCar(String carId) {
-        validationFields = new ValidationFields();
        Optional<Cars> carToBeFound = null;
         if(validationFields.validateId(carId)){
             carToBeFound = carsRepository.findById(Integer.parseInt(carId));
@@ -41,7 +39,6 @@ public class CarsServiceImpl implements CarsService{
 
     @Override
     public ResponseEntity<?> createNewCar(String carBrand, String version) {
-        validationFields = new ValidationFields();
         Cars carToBeCreated = null;
         if(validationFields.validateCarBrand(carBrand) && validationFields.validateCarVersion(version)) {
           Brands carBrandFinal = defineBrand(carBrand);
@@ -59,8 +56,23 @@ public class CarsServiceImpl implements CarsService{
 
 
     @Override
-    public String deleteSpecificCar(String carId) {
-        return "";
+    public ResponseEntity<?> deleteSpecificCar(String carId) {
+        Map<String, String> result = new HashMap<>();
+        if(validationFields.validateId(carId)){
+            Integer carIdToSearch = Integer.parseInt(carId);
+            Optional<?> carToBeFound = carsRepository.findById(carIdToSearch);
+           if(carToBeFound.isPresent()){
+               carsRepository.deleteById(carIdToSearch);
+               result.put("message", "Car deleted with success");
+              return ResponseEntity.status(HttpStatus.OK).body(result);
+           }else{
+               result.put("message", "Car not found, please provide a existing carId");
+             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+           }
+        }else{
+           result.put("message", "Invalid carId, please provide a valid one");
+        return   ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+        }
     }
 
     @Override

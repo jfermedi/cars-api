@@ -14,7 +14,7 @@ public interface CarsService {
 
     ResponseEntity<?> createNewCar(String carBrand, String version);
 
-    String deleteSpecificCar(String carId);
+    ResponseEntity<?> deleteSpecificCar(String carId);
 
     String deleteAllCars();
 

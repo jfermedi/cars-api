@@ -10,17 +10,17 @@ public interface CarsService {
 
     List<Cars>getAllCars();
 
-    Cars getSpecificCar(String carId);
+    ResponseEntity<?> getSpecificCar(String carId);
 
-    ResponseEntity<Cars> createNewCar(String carBrand, String version);
+    ResponseEntity<?> createNewCar(String carBrand, String version);
 
-    String deleteSpecificCar(String carId);
+    ResponseEntity<?> deleteSpecificCar(String carId);
 
-    String deleteAllCars();
+    ResponseEntity<?> deleteAllCars();
 
-    ResponseEntity<Cars> updateSpecificCar(String carId, Cars carToUpdate);
+    ResponseEntity<?> updateSpecificCar(String carId, Cars carToUpdate);
 
-    ResponseEntity<Cars> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate);
+    ResponseEntity<?> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate);
 
 
 }

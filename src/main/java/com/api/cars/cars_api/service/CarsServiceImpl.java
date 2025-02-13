@@ -1,8 +1,8 @@
 package com.api.cars.cars_api.service;
 
-import com.api.cars.cars_api.model.Brands;
+import com.api.cars.cars_api.enums.Brands;
 import com.api.cars.cars_api.model.Cars;
-import com.api.cars.cars_api.model.Version;
+import com.api.cars.cars_api.enums.Version;
 import com.api.cars.cars_api.repository.CarsRepository;
 import com.api.cars.cars_api.validator.ValidationFields;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +28,18 @@ public class CarsServiceImpl implements CarsService{
     }
 
     @Override
-    public Cars getSpecificCar(String carId) {
-       Optional<Cars> carToBeFound = null;
+    public ResponseEntity<?> getSpecificCar(String carId) {
+       Optional<Cars> carToBeFound = Optional.empty();
         if(validationFields.validateId(carId)){
             carToBeFound = carsRepository.findById(Integer.parseInt(carId));
-            return carToBeFound.get();
+            if(carToBeFound.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(carToBeFound);
+            }else{
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Car not found, please provide an existing car id");
+            }
+        }else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Car id invalid, please provide a valid one");
         }
-        return carToBeFound.get();
     }
 
     @Override
@@ -76,17 +81,46 @@ public class CarsServiceImpl implements CarsService{
     }
 
     @Override
-    public String deleteAllCars() {
-        return "";
+    public ResponseEntity<?> deleteAllCars() {
+        Map<String, String> result = new HashMap<>();
+        List<Cars> cars = carsRepository.findAll();
+        if(!cars.isEmpty()){
+            cars.stream().map(Cars::getCarId).forEach(carsRepository::deleteById);
+            result.put("message", "All cars deleted with success");
+           return ResponseEntity.status(HttpStatus.OK).body(result);
+        }else{
+            result.put("message", "There aren't no cars in the database");
+             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
+        }
+
     }
 
     @Override
-    public ResponseEntity<Cars> updateSpecificCar(String carId, Cars carToUpdate) {
-        return null;
+    public ResponseEntity<?> updateSpecificCar(String carId, Cars carToUpdate) {
+        Map<String, Cars> result = new HashMap<>();
+        Map<String, String> fail = new HashMap<>();
+            ResponseEntity<?> carToBeFound = getSpecificCar(carId);
+            if(carToBeFound.hasBody()){
+                Cars newCar = (Cars) carToBeFound.getBody();
+                try {
+                    newCar.setVersion(carToUpdate.getVersion());
+                    newCar.setBrand(carToUpdate.getBrand());
+                    newCar.setPrice(carToUpdate.getPrice());
+                    carsRepository.save(newCar);
+                    result.put("Car updated", newCar);
+                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                } catch (NullPointerException e) {
+                    fail.put("message", "There isn't no cars for the input carId. Please provide an existing carId");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+                }
+            }else{
+                fail.put("message", "Car not found, please provide an existing carId");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+            }
     }
 
     @Override
-    public ResponseEntity<Cars> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
+    public ResponseEntity<?> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
         return null;
     }
 
@@ -98,14 +132,19 @@ public class CarsServiceImpl implements CarsService{
         switch (numVersion){
             case 1:
                 versionFinal = Version.SEDAN.name();
+                break;
             case 2:
                 versionFinal = Version.HATCH.name();
+                break;
             case 3:
                 versionFinal = Version.SPORT.name();
+                break;
             case 4:
                 versionFinal = Version.SUV.name();
+                break;
             case 5:
                 versionFinal = Version.PICKUP.name();
+                break;
         }
 
         return versionFinal;
@@ -117,18 +156,25 @@ public class CarsServiceImpl implements CarsService{
         switch (num){
             case 1:
                 brandToReturn = Brands.VOLKSWAGEN;
+                break;
             case 2:
-                brandToReturn = Brands.MERCEDEZ;
+                brandToReturn = Brands.MERCEDES;
+                break;
             case 3:
                 brandToReturn = Brands.BMW;
+                break;
             case 4:
                 brandToReturn = Brands.FIAT;
+                break;
             case 5:
                 brandToReturn = Brands.MG;
+                break;
             case 6:
                 brandToReturn = Brands.OPEL;
+                break;
             case 7:
                 brandToReturn = Brands.RENAULT;
+                break;
         }
 
         return brandToReturn;

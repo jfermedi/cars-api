@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cars")
@@ -22,7 +23,7 @@ public class CarsController {
     }
 
     @GetMapping("/{carId}")
-    Cars getASpecificCarInfo(@PathVariable String carId){
+    ResponseEntity<?> getASpecificCarInfo(@PathVariable String carId){
         return carsService.getSpecificCar(carId);
     }
 
@@ -37,17 +38,17 @@ public class CarsController {
     }
 
     @DeleteMapping("/deleteAllCars")
-    String deleteAllCars(){
+    ResponseEntity<?> deleteAllCars(){
         return carsService.deleteAllCars();
     }
 
     @PutMapping("/updateCar/{carId}")
-    ResponseEntity<Cars> updateACar(@PathVariable String carId, @RequestBody Cars carToUpdate){
+    ResponseEntity<?> updateACar(@PathVariable String carId, @RequestBody Cars carToUpdate){
         return carsService.updateSpecificCar(carId, carToUpdate);
     }
 
     @PatchMapping("/updateCarPart/{carId}")
-    ResponseEntity<Cars> updateACarPartially(@PathVariable String carId, @RequestBody Map<String, Object> dataToUpdate){
+    ResponseEntity<?> updateACarPartially(@PathVariable String carId, @RequestBody Map<String, Object> dataToUpdate){
         return carsService.updateASpecificCarDetail(carId, dataToUpdate);
     }
 }

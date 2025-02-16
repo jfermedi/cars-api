@@ -5,11 +5,14 @@ import com.api.cars.cars_api.model.Cars;
 import com.api.cars.cars_api.enums.Version;
 import com.api.cars.cars_api.repository.CarsRepository;
 import com.api.cars.cars_api.validator.ValidationFields;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +86,7 @@ public class CarsServiceImpl implements CarsService{
     @Override
     public ResponseEntity<?> deleteAllCars() {
         Map<String, String> result = new HashMap<>();
-        List<Cars> cars = carsRepository.findAll();
+        List<Cars> cars = getAllCars();
         if(!cars.isEmpty()){
             cars.stream().map(Cars::getCarId).forEach(carsRepository::deleteById);
             result.put("message", "All cars deleted with success");
@@ -99,29 +102,57 @@ public class CarsServiceImpl implements CarsService{
     public ResponseEntity<?> updateSpecificCar(String carId, Cars carToUpdate) {
         Map<String, Cars> result = new HashMap<>();
         Map<String, String> fail = new HashMap<>();
-            ResponseEntity<?> carToBeFound = getSpecificCar(carId);
-            if(carToBeFound.hasBody()){
-                Cars newCar = (Cars) carToBeFound.getBody();
-                try {
+        if(validationFields.validateId(carId)){
+            Optional<?> carToBeFound = carsRepository.findById(Integer.parseInt(carId));
+            if(carToBeFound.isPresent()){
+                Cars newCar =  (Cars) carToBeFound.get();
                     newCar.setVersion(carToUpdate.getVersion());
                     newCar.setBrand(carToUpdate.getBrand());
                     newCar.setPrice(carToUpdate.getPrice());
                     carsRepository.save(newCar);
                     result.put("Car updated", newCar);
                     return ResponseEntity.status(HttpStatus.OK).body(result);
-                } catch (NullPointerException e) {
-                    fail.put("message", "There isn't no cars for the input carId. Please provide an existing carId");
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
-                }
+
             }else{
                 fail.put("message", "Car not found, please provide an existing carId");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
             }
+        }else{
+            fail.put("message", "There isn't no cars for the input carId. Please provide a valid carId");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+        }
     }
 
     @Override
     public ResponseEntity<?> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
-        return null;
+        Map<String, Cars> result = new HashMap<>();
+        Map<String, String> fail = new HashMap<>();
+
+        if(validationFields.validateId(carId)){
+            Optional<?> carToBeUpdated = carsRepository.findById(Integer.parseInt(carId));
+            try {
+                if(carToBeUpdated.isPresent()){
+                    Cars newCar = (Cars) carToBeUpdated.get();
+                    dataToUpdate.forEach((key, value) -> {
+                        Field field = ReflectionUtils.findField(Cars.class, key);
+                        if(field != null){
+                            field.setAccessible(true);
+                            ReflectionUtils.setField(field, newCar, value);
+                        }
+                    } );
+                    result.put("Car updated with success", newCar);
+                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                }else{
+                    throw new EntityNotFoundException("Car not found for the id " + carId );
+                }
+            }catch (EntityNotFoundException e){
+                fail.put("message:","Car not found, please provide a existing id");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+            }
+        }else{
+            fail.put("message:", "Car id invalid, please provide a valid one");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+        }
     }
 
 

@@ -8,18 +8,61 @@ import java.util.Map;
 
 public interface CarsService {
 
+    /**
+     * Abstract method to return a List<Cars> with
+     * all the cars from the database
+     * @return List<Cars>
+     */
     List<Cars>getAllCars();
 
+    /**
+     * Abstract method to return a specific Car object from
+     * the database, based on the carId
+     * @param carId
+     * @return ResponseEntity<?> with the Car object
+     */
     ResponseEntity<?> getSpecificCar(String carId);
 
+    /**
+     * Abstract method to create a new Car object and persist it on the
+     * database
+     * @param carBrand
+     * @param version
+     * @return ResponseEntity<?> with the Car object created
+     */
     ResponseEntity<?> createNewCar(String carBrand, String version);
 
+    /**
+     * Abstract method to delete a Car object from the database,
+     * based on the CarId
+     * @param carId
+     * @return ResponseEntity<?> with the success or fail of the deletion
+     */
     ResponseEntity<?> deleteSpecificCar(String carId);
 
+    /**
+     * Abstract method to delete all Car objects from the database,
+     * with success or fail of the deletion
+     * @return ResponseEntity<?> with a message of success or fail
+     */
     ResponseEntity<?> deleteAllCars();
 
+    /**
+     * Abstract method to update the Car object and persist it on
+     * the database, based on carId
+     * @param carId
+     * @param carToUpdate
+     * @return ResponseEntity<?> with the Car object updated or a fail message
+     */
     ResponseEntity<?> updateSpecificCar(String carId, Cars carToUpdate);
 
+    /**
+     * Abstract method to update partially the Car object and persist it
+     * on the database
+     * @param carId
+     * @param dataToUpdate
+     * @return ResponseEntity<?> with the Car object updated or a fail message
+     */
     ResponseEntity<?> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate);
 
 

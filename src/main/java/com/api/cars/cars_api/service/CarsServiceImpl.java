@@ -25,11 +25,23 @@ public class CarsServiceImpl implements CarsService{
  @Autowired
  CarsRepository carsRepository;
  ValidationFields validationFields = new ValidationFields();
+
+    /**
+     * Method implementation for returning all the Cars from the
+     * database
+     * @return List<Cars> with all the Cars objects
+     */
     @Override
     public List<Cars> getAllCars() {
         return carsRepository.findAll();
     }
 
+    /**
+     * Method implementation for returning a specific Car object from the
+     * database, based on carId
+     * @param carId
+     * @return ResponseEntity<?> with the Car object
+     */
     @Override
     public ResponseEntity<?> getSpecificCar(String carId) {
        Optional<Cars> carToBeFound = Optional.empty();
@@ -45,24 +57,37 @@ public class CarsServiceImpl implements CarsService{
         }
     }
 
+    /**
+     * Method implementation for creating a new Cars object and persist it
+     * on the database
+     * @param carBrand
+     * @param version
+     * @return ResponseEntity<?> with the new Cars object created
+     */
     @Override
     public ResponseEntity<?> createNewCar(String carBrand, String version) {
-        Cars carToBeCreated = null;
-        if(validationFields.validateCarBrand(carBrand) && validationFields.validateCarVersion(version)) {
-          Brands carBrandFinal = defineBrand(carBrand);
-          Float price = carBrandFinal.price;
-          String carVersionFinal = defineVersion(version);
-             carToBeCreated = new Cars(carBrandFinal.name(),price ,carVersionFinal);
-            carsRepository.save(carToBeCreated);
-            return ResponseEntity.status(HttpStatus.CREATED).body(carToBeCreated);
+        Map<String, String> errorResponse = new HashMap<String, String>();
+        Cars carToBeCreated;
+        if((validationFields.validateCarBrand(carBrand)) && (validationFields.validateCarVersion(version))) {
+          String carBrandFinal = defineBrand(carBrand);
+              Float price = definePrice(carBrand);
+              String carVersionFinal = defineVersion(version);
+              carToBeCreated = new Cars(carBrandFinal,price ,carVersionFinal);
+              carsRepository.save(carToBeCreated);
+              return ResponseEntity.status(HttpStatus.CREATED).body(carToBeCreated);
         }else{
-            Map<String, String> errorResponse = new HashMap<String, String>();
+
             errorResponse.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-
+    /**
+     * Method implementation to delete a Car object from the database,
+     * based on the carId
+     * @param carId
+     * @return ResponseEntity<?> with the success or fail of the deletion
+     */
     @Override
     public ResponseEntity<?> deleteSpecificCar(String carId) {
         Map<String, String> result = new HashMap<>();
@@ -83,6 +108,10 @@ public class CarsServiceImpl implements CarsService{
         }
     }
 
+    /**
+     * Method implementation to delete all Cars objects from the database
+     * @return ResponseEntity<?> a message with the success or fail of the deletion
+     */
     @Override
     public ResponseEntity<?> deleteAllCars() {
         Map<String, String> result = new HashMap<>();
@@ -98,6 +127,13 @@ public class CarsServiceImpl implements CarsService{
 
     }
 
+    /**
+     * Method implementation to update a Cars object and persist it on the
+     * database, based on the carId
+     * @param carId
+     * @param carToUpdate
+     * @return ResponseEntity<?> with the Cars object updated
+     */
     @Override
     public ResponseEntity<?> updateSpecificCar(String carId, Cars carToUpdate) {
         Map<String, Cars> result = new HashMap<>();
@@ -123,6 +159,13 @@ public class CarsServiceImpl implements CarsService{
         }
     }
 
+    /**
+     * Method implementation to update partially a Cars object and persist it
+     * on the database, based on the carId
+     * @param carId
+     * @param dataToUpdate
+     * @return ResponseEntity<?> with the Cars object updated
+     */
     @Override
     public ResponseEntity<?> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
         Map<String, Cars> result = new HashMap<>();
@@ -155,8 +198,11 @@ public class CarsServiceImpl implements CarsService{
         }
     }
 
-
-
+    /**
+     * Auxiliary method to define the version from the Enum of versions
+     * @param version
+     * @return a String version
+     */
     private String defineVersion(String version) {
         Integer numVersion = Integer.parseInt(version);
         String versionFinal = "";
@@ -181,33 +227,74 @@ public class CarsServiceImpl implements CarsService{
         return versionFinal;
     }
 
-    private Brands defineBrand(String carBrand) {
+    /**
+     * Auxiliary method to define the brand from the Enum of brands
+     * @param carBrand
+     * @return String brand
+     */
+    private String defineBrand(String carBrand) {
         Integer num = Integer.parseInt(carBrand);
-        Brands brandToReturn = null;
+        String brandToReturn = "";
         switch (num){
             case 1:
-                brandToReturn = Brands.VOLKSWAGEN;
+                brandToReturn = Brands.VOLKSWAGEN.name();
                 break;
             case 2:
-                brandToReturn = Brands.MERCEDES;
+                brandToReturn = Brands.MERCEDES.name();
                 break;
             case 3:
-                brandToReturn = Brands.BMW;
+                brandToReturn = Brands.BMW.name();
                 break;
             case 4:
-                brandToReturn = Brands.FIAT;
+                brandToReturn = Brands.FIAT.name();
                 break;
             case 5:
-                brandToReturn = Brands.MG;
+                brandToReturn = Brands.MG.name();
                 break;
             case 6:
-                brandToReturn = Brands.OPEL;
+                brandToReturn = Brands.OPEL.name();
                 break;
             case 7:
-                brandToReturn = Brands.RENAULT;
+                brandToReturn = Brands.RENAULT.name();
                 break;
         }
 
         return brandToReturn;
     }
+
+    /**
+     * Auxiliary method to define the price from the Enum of brands
+     * @param carBrand
+     * @return Float price
+     */
+    private Float definePrice(String carBrand) {
+        Integer num = Integer.parseInt(carBrand);
+        Float priceToReturn = 0.0f;
+        switch (num){
+            case 1:
+                priceToReturn = Brands.VOLKSWAGEN.price;
+                break;
+            case 2:
+                priceToReturn = Brands.MERCEDES.price;
+                break;
+            case 3:
+                priceToReturn = Brands.BMW.price;
+                break;
+            case 4:
+                priceToReturn = Brands.FIAT.price;
+                break;
+            case 5:
+                priceToReturn = Brands.MG.price;
+                break;
+            case 6:
+                priceToReturn = Brands.OPEL.price;
+                break;
+            case 7:
+                priceToReturn = Brands.RENAULT.price;
+                break;
+        }
+
+        return priceToReturn;
+    }
+
 }

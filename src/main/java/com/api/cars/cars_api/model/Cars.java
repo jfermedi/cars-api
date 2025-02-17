@@ -15,9 +15,17 @@ public class Cars {
     Float price;
     String version;
 
-
+    /**
+     * Constructor method with no args
+     */
     public Cars(){}
 
+    /**
+     * Constructor method
+     * @param brand
+     * @param price
+     * @param version
+     */
     public Cars(String brand, Float price, String version) {
         this.brand = brand;
         this.price = price;

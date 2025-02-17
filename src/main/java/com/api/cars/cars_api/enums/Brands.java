@@ -7,6 +7,11 @@ public enum Brands {
     public final String name;
     public final Float price;
 
+    /**
+     * Constructor method
+     * @param name
+     * @param price
+     */
     private Brands(String name,Float price){
         this.name = name;
         this.price = price;

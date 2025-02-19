@@ -83,8 +83,12 @@ public class CarsServiceImpl implements CarsService{
             carsFound = getAllCarsByBrand(finalBrand);
             Object o = carsFound.isEmpty() ? response.put("Message: ", "No cars found for the brand " + finalBrand) :
                     response.put("Cars: ", carsFound);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }else{
+            response.put("Message: " , "Car brand invalid, please provide a car brand from 1-7");
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+
     }
 
     /**
@@ -112,8 +116,12 @@ public class CarsServiceImpl implements CarsService{
             carsFound = getAllCarsByVersion(finalVersion);
             Object o = carsFound.isEmpty() ? response.put("Message: ", "No cars found for the version " + finalVersion) :
                     response.put("Cars: ", carsFound);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }else{
+            response.put("Message: " , "Car version invalid, please provide a car version from 1-5");
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+
     }
 
     /**

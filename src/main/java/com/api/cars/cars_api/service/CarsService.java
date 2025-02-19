@@ -9,11 +9,11 @@ import java.util.Map;
 public interface CarsService {
 
     /**
-     * Abstract method to return a List<Cars> with
-     * all the cars from the database
-     * @return List<Cars>
+     * Abstract method to return all the Cars objects from the
+     * database
+     * @return ResponseEntity<?> with the all the Cars objects
      */
-    List<Cars>getAllCars();
+    ResponseEntity<?> getAllCars();
 
     /**
      * Abstract method to return a specific Car object from
@@ -23,6 +23,19 @@ public interface CarsService {
      */
     ResponseEntity<?> getSpecificCar(String carId);
 
+    /**
+     * Abstract method to return all Cars with the same brand
+     * @param brand
+     * @return ResponseEntity<?> with all the Cars objects
+     */
+    ResponseEntity<?> getCarsByBrand(String brand);
+
+    /**
+     * Abstract method to return all Cars with the same version
+     * @param version
+     * @return ResponseEntity<?> with all the Cars objects
+     */
+    ResponseEntity<?> getCarsByVersion(String version);
     /**
      * Abstract method to create a new Car object and persist it on the
      * database

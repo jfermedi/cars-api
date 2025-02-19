@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -27,12 +24,27 @@ public class CarsServiceImpl implements CarsService{
  ValidationFields validationFields = new ValidationFields();
 
     /**
+     * Method implementation to return all Cars from the database
+     * @return ResponseEntity<?> with the cars found
+     */
+    @Override
+    public ResponseEntity<?> getAllCars() {
+        Map<String, Object> response = new HashMap<>();
+        List<Cars> carsList = getAllCarsList();
+        if(carsList.isEmpty()){
+            response.put("Message: ", "No cars exist on the database");
+        }else{
+         response.put("Cars: ", carsList);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /**
      * Method implementation for returning all the Cars from the
      * database
      * @return List<Cars> with all the Cars objects
      */
-    @Override
-    public List<Cars> getAllCars() {
+    private List<Cars> getAllCarsList() {
         return carsRepository.findAll();
     }
 
@@ -55,6 +67,63 @@ public class CarsServiceImpl implements CarsService{
         }else{
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Car id invalid, please provide a valid one");
         }
+    }
+
+    /**
+     * Method implementation to return all Cars objects with the same brand
+     * @param brand
+     * @return ResponseEntity<?> with all the Cars objects
+     */
+    @Override
+    public ResponseEntity<?> getCarsByBrand(String brand) {
+        Map<String, Object> response = new HashMap<>();
+        List<Cars> carsFound ;
+        if(validationFields.validateCarBrand(brand)){
+            String finalBrand = defineBrand(brand);
+            carsFound = getAllCarsByBrand(finalBrand);
+            Object o = carsFound.isEmpty() ? response.put("Message: ", "No cars found for the brand " + finalBrand) :
+                    response.put("Cars: ", carsFound);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /**
+     * Auxiliary method to return all Cars from the database with the same
+     * brand
+     * @param brand
+     * @return List<Cars> with all the cars
+     */
+    private List<Cars> getAllCarsByBrand(String brand){
+        return carsRepository.findByBrand(brand);
+    }
+
+    /**
+     * Method implementation to return all the Cars objects with the same
+     * version
+     * @param version
+     * @return ResponseEntity<?> with all the Cars
+     */
+    @Override
+    public ResponseEntity<?> getCarsByVersion(String version) {
+        Map<String, Object> response = new HashMap<>();
+        List<Cars> carsFound ;
+        if(validationFields.validateCarVersion(version)){
+            String finalVersion = defineVersion(version);
+            carsFound = getAllCarsByVersion(finalVersion);
+            Object o = carsFound.isEmpty() ? response.put("Message: ", "No cars found for the version " + finalVersion) :
+                    response.put("Cars: ", carsFound);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /**
+     * Auxiliary method to return all the Cars objects from the database
+     * with the same version
+     * @param version
+     * @return List<Cars> with all the Cars objects
+     */
+    private List<Cars> getAllCarsByVersion(String version){
+        return carsRepository.findByVersion(version);
     }
 
     /**
@@ -115,7 +184,7 @@ public class CarsServiceImpl implements CarsService{
     @Override
     public ResponseEntity<?> deleteAllCars() {
         Map<String, String> result = new HashMap<>();
-        List<Cars> cars = getAllCars();
+        List<Cars> cars = getAllCarsList();
         if(!cars.isEmpty()){
             cars.stream().map(Cars::getCarId).forEach(carsRepository::deleteById);
             result.put("message", "All cars deleted with success");

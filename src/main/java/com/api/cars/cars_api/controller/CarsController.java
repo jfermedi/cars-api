@@ -3,9 +3,11 @@ package com.api.cars.cars_api.controller;
 import com.api.cars.cars_api.model.Cars;
 import com.api.cars.cars_api.service.CarsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +23,7 @@ public class CarsController {
      * @return a List<Cars>
      */
     @GetMapping("/all")
-    List<Cars> getAllCars(){
+    ResponseEntity<?> getAllCars(){
         return carsService.getAllCars();
     }
 
@@ -35,6 +37,25 @@ public class CarsController {
         return carsService.getSpecificCar(carId);
     }
 
+    /**
+     * GET endpoint for returning all Cars objects with the same Brand
+     * @param carBrand
+     * @return ResponseEntity<?> with the Cars objects
+     */
+    @GetMapping("brand/{carBrand}")
+    ResponseEntity<?> getCarsByBrand(@PathVariable String carBrand){
+        return carsService.getCarsByBrand(carBrand);
+    }
+
+    /**
+     * GET endpoint for returning all Cars objects with the same version
+     * @param carVersion
+     * @return ResponseEntity<?> with the Cars objects
+     */
+    @GetMapping("version/{carVersion}")
+    ResponseEntity<?> getCarsByVersion(@PathVariable String carVersion){
+        return carsService.getCarsByVersion(carVersion);
+    }
     /**
      * POST endpoint for creating a car object
      * @param carBrand

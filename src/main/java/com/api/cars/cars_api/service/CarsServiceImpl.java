@@ -19,22 +19,24 @@ import java.util.*;
 @Service
 public class CarsServiceImpl implements CarsService{
 
- @Autowired
+@Autowired
  CarsRepository carsRepository;
  ValidationFields validationFields = new ValidationFields();
+ Map<String, Object> response;
 
     /**
      * Method implementation to return all Cars from the database
-     * @return ResponseEntity<?> with the cars found
+     *
+     * @return ResponseEntity<Map<String, Object>> with the cars found
      */
     @Override
-    public ResponseEntity<?> getAllCars() {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> getAllCars() {
+        response = new HashMap<String, Object>();
         List<Cars> carsList = getAllCarsList();
         if(carsList.isEmpty()){
-            response.put("Message: ", "No cars exist on the database");
+            response.put("message", "No cars exist on the database");
         }else{
-         response.put("Cars: ", carsList);
+         response.put("cars", carsList);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -44,48 +46,54 @@ public class CarsServiceImpl implements CarsService{
      * database
      * @return List<Cars> with all the Cars objects
      */
-    private List<Cars> getAllCarsList() {
+     public List<Cars> getAllCarsList() {
         return carsRepository.findAll();
     }
 
     /**
      * Method implementation for returning a specific Car object from the
      * database, based on carId
+     *
      * @param carId
-     * @return ResponseEntity<?> with the Car object
+     * @return ResponseEntity<Map<String, Object>> with the Car object
      */
     @Override
-    public ResponseEntity<?> getSpecificCar(String carId) {
+    public ResponseEntity<Map<String, Object>> getSpecificCar(String carId) {
+        response = new HashMap<String, Object>();
        Optional<Cars> carToBeFound = Optional.empty();
         if(validationFields.validateId(carId)){
             carToBeFound = carsRepository.findById(Integer.parseInt(carId));
             if(carToBeFound.isPresent()) {
-                return ResponseEntity.status(HttpStatus.OK).body(carToBeFound);
+                response.put("car", carToBeFound);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
             }else{
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Car not found, please provide an existing car id");
+                response.put("message","Car not found, please provide an existing car id");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         }else{
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Car id invalid, please provide a valid one");
+            response.put("message", "Car id invalid, please provide a valid one");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
     /**
      * Method implementation to return all Cars objects with the same brand
+     *
      * @param brand
-     * @return ResponseEntity<?> with all the Cars objects
+     * @return ResponseEntity<Map<String, Object>> with all the Cars objects
      */
     @Override
-    public ResponseEntity<?> getCarsByBrand(String brand) {
+    public ResponseEntity<Map<String, Object>> getCarsByBrand(String brand) {
         Map<String, Object> response = new HashMap<>();
         List<Cars> carsFound ;
         if(validationFields.validateCarBrand(brand)){
             String finalBrand = defineBrand(brand);
             carsFound = getAllCarsByBrand(finalBrand);
-            Object o = carsFound.isEmpty() ? response.put("Message: ", "No cars found for the brand " + finalBrand) :
-                    response.put("Cars: ", carsFound);
+            Object o = carsFound.isEmpty() ? response.put("message", "No cars found for the brand " + finalBrand) :
+                    response.put("cars", carsFound);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }else{
-            response.put("Message: " , "Car brand invalid, please provide a car brand from 1-7");
+            response.put("message" , "Car brand invalid, please provide a car brand from 1-7");
             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
@@ -104,21 +112,22 @@ public class CarsServiceImpl implements CarsService{
     /**
      * Method implementation to return all the Cars objects with the same
      * version
+     *
      * @param version
-     * @return ResponseEntity<?> with all the Cars
+     * @return ResponseEntity<Map<String, Object>> with all the Cars
      */
     @Override
-    public ResponseEntity<?> getCarsByVersion(String version) {
+    public ResponseEntity<Map<String, Object>> getCarsByVersion(String version) {
         Map<String, Object> response = new HashMap<>();
         List<Cars> carsFound ;
         if(validationFields.validateCarVersion(version)){
             String finalVersion = defineVersion(version);
             carsFound = getAllCarsByVersion(finalVersion);
-            Object o = carsFound.isEmpty() ? response.put("Message: ", "No cars found for the version " + finalVersion) :
-                    response.put("Cars: ", carsFound);
+            Object o = carsFound.isEmpty() ? response.put("message", "No cars found for the version " + finalVersion) :
+                    response.put("cars", carsFound);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }else{
-            response.put("Message: " , "Car version invalid, please provide a car version from 1-5");
+            response.put("message" , "Car version invalid, please provide a car version from 1-5");
             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
@@ -139,11 +148,11 @@ public class CarsServiceImpl implements CarsService{
      * on the database
      * @param carBrand
      * @param version
-     * @return ResponseEntity<?> with the new Cars object created
+     * @return ResponseEntity<Map<String, Object>> with the new Cars object created
      */
     @Override
-    public ResponseEntity<?> createNewCar(String carBrand, String version) {
-        Map<String, String> errorResponse = new HashMap<String, String>();
+    public ResponseEntity<Map<String, Object>> createNewCar(String carBrand, String version) {
+       response = new HashMap<String, Object>();
         Cars carToBeCreated;
         if((validationFields.validateCarBrand(carBrand)) && (validationFields.validateCarVersion(version))) {
           String carBrandFinal = defineBrand(carBrand);
@@ -151,55 +160,58 @@ public class CarsServiceImpl implements CarsService{
               String carVersionFinal = defineVersion(version);
               carToBeCreated = new Cars(carBrandFinal,price ,carVersionFinal);
               carsRepository.save(carToBeCreated);
-              return ResponseEntity.status(HttpStatus.CREATED).body(carToBeCreated);
+              response.put("car", carToBeCreated);
+              return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }else{
 
-            errorResponse.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            response.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
     /**
      * Method implementation to delete a Car object from the database,
      * based on the carId
+     *
      * @param carId
-     * @return ResponseEntity<?> with the success or fail of the deletion
+     * @return ResponseEntity<Map<String, Object>> with the success or fail of the deletion
      */
     @Override
-    public ResponseEntity<?> deleteSpecificCar(String carId) {
-        Map<String, String> result = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> deleteSpecificCar(String carId) {
+        response = new HashMap<>();
         if(validationFields.validateId(carId)){
             Integer carIdToSearch = Integer.parseInt(carId);
             Optional<?> carToBeFound = carsRepository.findById(carIdToSearch);
            if(carToBeFound.isPresent()){
                carsRepository.deleteById(carIdToSearch);
-               result.put("message", "Car deleted with success");
-              return ResponseEntity.status(HttpStatus.OK).body(result);
+               response.put("message", "Car deleted with success");
+              return ResponseEntity.status(HttpStatus.OK).body(response);
            }else{
-               result.put("message", "Car not found, please provide a existing carId");
-             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+               response.put("message", "Car not found, please provide a existing carId");
+             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
            }
         }else{
-           result.put("message", "Invalid carId, please provide a valid one");
-        return   ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+           response.put("message", "Invalid carId, please provide a valid one");
+        return   ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
     /**
      * Method implementation to delete all Cars objects from the database
-     * @return ResponseEntity<?> a message with the success or fail of the deletion
+     *
+     * @return ResponseEntity<Map<String, Object>> a message with the success or fail of the deletion
      */
     @Override
-    public ResponseEntity<?> deleteAllCars() {
-        Map<String, String> result = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> deleteAllCars() {
+         response = new HashMap<>();
         List<Cars> cars = getAllCarsList();
         if(!cars.isEmpty()){
             cars.stream().map(Cars::getCarId).forEach(carsRepository::deleteById);
-            result.put("message", "All cars deleted with success");
-           return ResponseEntity.status(HttpStatus.OK).body(result);
+            response.put("message", "All cars deleted with success");
+           return ResponseEntity.status(HttpStatus.OK).body(response);
         }else{
-            result.put("message", "There aren't no cars in the database");
-             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
+            response.put("message", "There aren't no cars in the database");
+             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
         }
 
     }
@@ -207,14 +219,15 @@ public class CarsServiceImpl implements CarsService{
     /**
      * Method implementation to update a Cars object and persist it on the
      * database, based on the carId
+     *
      * @param carId
      * @param carToUpdate
-     * @return ResponseEntity<?> with the Cars object updated
+     * @return ResponseEntity<Map<String, Object>> with the Cars object updated
      */
     @Override
-    public ResponseEntity<?> updateSpecificCar(String carId, Cars carToUpdate) {
-        Map<String, Cars> result = new HashMap<>();
-        Map<String, String> fail = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> updateSpecificCar(String carId, Cars carToUpdate) {
+         response = new HashMap<>();
+
         if(validationFields.validateId(carId)){
             Optional<?> carToBeFound = carsRepository.findById(Integer.parseInt(carId));
             if(carToBeFound.isPresent()){
@@ -223,30 +236,31 @@ public class CarsServiceImpl implements CarsService{
                     newCar.setBrand(carToUpdate.getBrand());
                     newCar.setPrice(carToUpdate.getPrice());
                     carsRepository.save(newCar);
-                    result.put("Car updated", newCar);
-                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                    response.put("car", newCar);
+                    return ResponseEntity.status(HttpStatus.OK).body(response);
 
             }else{
-                fail.put("message", "Car not found, please provide an existing carId");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+                response.put("message", "Car not found, please provide an existing carId");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         }else{
-            fail.put("message", "There isn't no cars for the input carId. Please provide a valid carId");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+            response.put("message", "There isn't no cars for the input carId. Please provide a valid carId");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
     /**
      * Method implementation to update partially a Cars object and persist it
      * on the database, based on the carId
+     *
      * @param carId
      * @param dataToUpdate
-     * @return ResponseEntity<?> with the Cars object updated
+     * @return ResponseEntity<Map<String, Object>> with the Cars object updated
      */
     @Override
-    public ResponseEntity<?> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
-        Map<String, Cars> result = new HashMap<>();
-        Map<String, String> fail = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
+         response = new HashMap<>();
+
 
         if(validationFields.validateId(carId)){
             Optional<?> carToBeUpdated = carsRepository.findById(Integer.parseInt(carId));
@@ -260,18 +274,18 @@ public class CarsServiceImpl implements CarsService{
                             ReflectionUtils.setField(field, newCar, value);
                         }
                     } );
-                    result.put("Car updated with success", newCar);
-                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                    response.put("car", newCar);
+                    return ResponseEntity.status(HttpStatus.OK).body(response);
                 }else{
                     throw new EntityNotFoundException("Car not found for the id " + carId );
                 }
             }catch (EntityNotFoundException e){
-                fail.put("message:","Car not found, please provide a existing id");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+                response.put("message:","Car not found, please provide a existing id");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         }else{
-            fail.put("message:", "Car id invalid, please provide a valid one");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(fail);
+            response.put("message:", "Car id invalid, please provide a valid one");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 

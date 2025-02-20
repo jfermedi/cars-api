@@ -23,7 +23,7 @@ public class CarsController {
      * @return a List<Cars>
      */
     @GetMapping("/all")
-    ResponseEntity<?> getAllCars(){
+    ResponseEntity<Map<String, Object>> getAllCars(){
         return carsService.getAllCars();
     }
 
@@ -33,7 +33,7 @@ public class CarsController {
      * @return ResponseEntity<?> with the details of the car
      */
     @GetMapping("/{carId}")
-    ResponseEntity<?> getASpecificCarInfo(@PathVariable String carId){
+    ResponseEntity<Map<String, Object>> getASpecificCarInfo(@PathVariable String carId){
         return carsService.getSpecificCar(carId);
     }
 
@@ -43,7 +43,7 @@ public class CarsController {
      * @return ResponseEntity<?> with the Cars objects
      */
     @GetMapping("brand/{carBrand}")
-    ResponseEntity<?> getCarsByBrand(@PathVariable String carBrand){
+    ResponseEntity<Map<String, Object>> getCarsByBrand(@PathVariable String carBrand){
         return carsService.getCarsByBrand(carBrand);
     }
 
@@ -53,7 +53,7 @@ public class CarsController {
      * @return ResponseEntity<?> with the Cars objects
      */
     @GetMapping("version/{carVersion}")
-    ResponseEntity<?> getCarsByVersion(@PathVariable String carVersion){
+    ResponseEntity<Map<String, Object>> getCarsByVersion(@PathVariable String carVersion){
         return carsService.getCarsByVersion(carVersion);
     }
     /**
@@ -63,7 +63,7 @@ public class CarsController {
      * @return ResponseEntity<?> with the car object created
      */
     @PostMapping("/createCar/{carBrand}/{carVersion}")
-    ResponseEntity<?> createANewCar(@PathVariable String carBrand, @PathVariable String carVersion){
+    ResponseEntity<Map<String, Object>> createANewCar(@PathVariable String carBrand, @PathVariable String carVersion){
         return carsService.createNewCar(carBrand, carVersion);
     }
 
@@ -73,7 +73,7 @@ public class CarsController {
      * @return ResponseEntity<?> with a message of success or fail of the deletion
      */
     @DeleteMapping("/deleteCar/{carId}")
-    ResponseEntity<?> deleteACar(@PathVariable String carId){
+    ResponseEntity<Map<String, Object>> deleteACar(@PathVariable String carId){
         return carsService.deleteSpecificCar(carId);
     }
 
@@ -82,7 +82,7 @@ public class CarsController {
      * @return ResponseEntity<?> with a message of success or fail of the deletion
      */
     @DeleteMapping("/deleteAllCars")
-    ResponseEntity<?> deleteAllCars(){
+    ResponseEntity<Map<String, Object>> deleteAllCars(){
         return carsService.deleteAllCars();
     }
 
@@ -93,7 +93,7 @@ public class CarsController {
      * @return ResponseEntity<?> with the car object updated, or a fail message
      */
     @PutMapping("/updateCar/{carId}")
-    ResponseEntity<?> updateACar(@PathVariable String carId, @RequestBody Cars carToUpdate){
+    ResponseEntity<Map<String, Object>> updateACar(@PathVariable String carId, @RequestBody Cars carToUpdate){
         return carsService.updateSpecificCar(carId, carToUpdate);
     }
 
@@ -104,7 +104,7 @@ public class CarsController {
      * @return ResponseEntity<?> with the car object updated, or a fail message
      */
     @PatchMapping("/updateCarPart/{carId}")
-    ResponseEntity<?> updateACarPartially(@PathVariable String carId, @RequestBody Map<String, Object> dataToUpdate){
+    ResponseEntity<Map<String, Object>> updateACarPartially(@PathVariable String carId, @RequestBody Map<String, Object> dataToUpdate){
         return carsService.updateASpecificCarDetail(carId, dataToUpdate);
     }
 }

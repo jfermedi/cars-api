@@ -2,7 +2,6 @@ package com.api.cars.cars_api.service;
 
 import com.api.cars.cars_api.model.Cars;
 import com.api.cars.cars_api.repository.CarsRepository;
-import org.apache.coyote.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,18 +122,178 @@ class CarsServiceImplTest {
 
     @Test
     void getCarsByBrand() {
-    }
+        List<Cars> carsList = List.of(car3, car4);
+        dataToReturn.put("cars", carsList);
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
 
+        when(carsRepository.findByBrand("BMW")).thenReturn(carsList);
+        dataReturned = carsService.getCarsByBrand("3");
+        List<Cars> carsListFound = (List<Cars>) dataReturned.getBody().get("cars");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(carsListFound.size(), carsList.size());
+        assertEquals(carsListFound.get(0).getCarId(), carsList.get(0).getCarId());
+        assertEquals(carsListFound.get(0).getBrand(), carsList.get(0).getBrand());
+        assertEquals(carsListFound.get(0).getVersion(), carsList.get(0).getVersion());
+        assertEquals(carsListFound.get(0).getPrice(), carsList.get(0).getPrice());
+        assertEquals(carsListFound.get(1).getCarId(), carsList.get(1).getCarId());
+        assertEquals(carsListFound.get(1).getBrand(), carsList.get(1).getBrand());
+        assertEquals(carsListFound.get(1).getVersion(), carsList.get(1).getVersion());
+        assertEquals(carsListFound.get(1).getPrice(), carsList.get(1).getPrice());
+    }
+    @Test
+    void getCarsByBrandInvalidBrand(){
+        dataToReturn.put("message", "Car brand invalid, please provide a car brand from 1-7");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        dataReturned = carsService.getCarsByBrand("A");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+    @Test
+    void getCarsByBrandEmptyCarsListFoundByBrand(){
+        List<Cars> carsList = new ArrayList<>();
+        String finalBrand = "OPEL";
+        dataToReturn.put("message", "No cars found for the brand " + finalBrand);
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+
+        when(carsRepository.findByBrand("A")).thenReturn(carsList);
+
+        dataReturned = carsService.getCarsByBrand("6");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
     @Test
     void getCarsByVersion() {
+        List<Cars> carsList = List.of(car, car3);
+        dataToReturn.put("cars", carsList);
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+
+        when(carsRepository.findByVersion("SPORT")).thenReturn(carsList);
+
+        dataReturned = carsService.getCarsByVersion("3");
+        List<Cars> carsListFound = (List<Cars>) dataReturned.getBody().get("cars");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("cars"), response.getBody().get("cars"));
+        assertNotNull(carsListFound);
+        assertEquals(carsListFound.size(), carsList.size());
+        assertEquals(carsListFound.get(0).getCarId(), carsList.get(0).getCarId());
+        assertEquals(carsListFound.get(0).getVersion(), carsList.get(0).getVersion());
+        assertEquals(carsListFound.get(0).getBrand(), carsList.get(0).getBrand());
+        assertEquals(carsListFound.get(0).getPrice(), carsList.get(0).getPrice());
+        assertEquals(carsListFound.get(1).getCarId(), carsList.get(1).getCarId());
+        assertEquals(carsListFound.get(1).getVersion(), carsList.get(1).getVersion());
+        assertEquals(carsListFound.get(1).getBrand(), carsList.get(1).getBrand());
+        assertEquals(carsListFound.get(1).getPrice(), carsList.get(1).getPrice());
     }
 
+    @Test
+    void getCarsByVersionInvalidCarVersion(){
+        dataToReturn.put("message", "Car version invalid, please provide a car version from 1-5");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        dataReturned = carsService.getCarsByVersion(null);
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void getCarsByVersionEmptyListCarVersion(){
+        List<Cars> carsList = new ArrayList<>();
+        String finalVersion = "SPORT";
+        dataToReturn.put("message", "No cars found for the version " + finalVersion);
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+
+        when(carsRepository.findByBrand("A")).thenReturn(carsList);
+
+        dataReturned = carsService.getCarsByVersion("3");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
     @Test
     void createNewCar() {
+        Cars carToBeCreated = new Cars("FIAT", 25.000f, "HATCH");
+        dataToReturn.put("car", carToBeCreated);
+        response = ResponseEntity.status(HttpStatus.CREATED).body(dataToReturn);
+
+        when(carsRepository.save(carToBeCreated)).thenReturn(carToBeCreated);
+
+        dataReturned = carsService.createNewCar("4","2");
+        Cars carCreated = (Cars) dataReturned.getBody().get("car");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+       assertNotNull(carCreated);
+       assertEquals(carCreated.getCarId(), carToBeCreated.getCarId());
+       assertEquals(carCreated.getBrand(), carToBeCreated.getBrand());
+       assertEquals(carCreated.getPrice(), carToBeCreated.getPrice());
+       assertEquals(carCreated.getVersion(), carToBeCreated.getVersion());
     }
 
     @Test
+    void createNewCarInvalidCarBrandAndValidCarVersion(){
+        dataToReturn.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        dataReturned = carsService.createNewCar("A","5");
+
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void createNewCarValidCarBrandAndInvalidCarVersion(){
+        dataToReturn.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        dataReturned = carsService.createNewCar("1","B");
+
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+    @Test
     void deleteSpecificCar() {
+        Optional<Cars> carsOptional = Optional.of(car);
+        dataToReturn.put("message", "Car deleted with success");
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+
+        when(carsRepository.findById(1)).thenReturn(carsOptional);
+
+        dataReturned = carsService.deleteSpecificCar("1");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void deleteSpecificCarCarToBeDeletedNotFound(){
+        Optional<Cars> optionalCars = Optional.empty();
+        dataToReturn.put("message", "Car not found, please provide a existing carId");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        when(carsRepository.findById(0)).thenReturn(optionalCars);
+
+        dataReturned = carsService.deleteSpecificCar("0");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void deleteSpecificCarInvalidCarId(){
+        dataToReturn.put("message", "Invalid carId, please provide a valid one");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        dataReturned = carsService.deleteSpecificCar("A");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
     }
 
     @Test

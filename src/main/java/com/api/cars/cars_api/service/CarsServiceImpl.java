@@ -163,7 +163,6 @@ public class CarsServiceImpl implements CarsService{
               response.put("car", carToBeCreated);
               return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }else{
-
             response.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }

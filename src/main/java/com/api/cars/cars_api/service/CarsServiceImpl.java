@@ -163,7 +163,6 @@ public class CarsServiceImpl implements CarsService{
               response.put("car", carToBeCreated);
               return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }else{
-
             response.put("message", "Invalid car brand or version ! Please provide a car brand from 1-7, and version from 1-5");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
@@ -226,27 +225,34 @@ public class CarsServiceImpl implements CarsService{
      */
     @Override
     public ResponseEntity<Map<String, Object>> updateSpecificCar(String carId, Cars carToUpdate) {
-         response = new HashMap<>();
+        response = new HashMap<>();
 
-        if(validationFields.validateId(carId)){
-            Optional<?> carToBeFound = carsRepository.findById(Integer.parseInt(carId));
-            if(carToBeFound.isPresent()){
-                Cars newCar =  (Cars) carToBeFound.get();
-                    newCar.setVersion(carToUpdate.getVersion());
-                    newCar.setBrand(carToUpdate.getBrand());
-                    newCar.setPrice(carToUpdate.getPrice());
-                    carsRepository.save(newCar);
-                    response.put("car", newCar);
-                    return ResponseEntity.status(HttpStatus.OK).body(response);
-
-            }else{
-                response.put("message", "Car not found, please provide an existing carId");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-        }else{
-            response.put("message", "There isn't no cars for the input carId. Please provide a valid carId");
+        if (!validationFields.validateId(carId)) {
+            response.put("message", "Car ID is invalid. Please provide a valid one.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+
+        Optional<Cars> carToBeFound = carsRepository.findById(Integer.parseInt(carId));
+        if (carToBeFound.isEmpty()) {
+            response.put("message", "Car not found. Please provide an existing carId.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Cars newCar = carToBeFound.get();
+        String originalBrand = carToUpdate.getBrand();
+
+        if (originalBrand != null) {
+            newCar.setBrand(defineBrand(originalBrand)); // Convert brand number → brand name
+            newCar.setPrice(definePrice(originalBrand)); // Convert original brand number → price
+        }
+
+        if (carToUpdate.getVersion() != null) {
+            newCar.setVersion(defineVersion(carToUpdate.getVersion()));
+        }
+
+        carsRepository.save(newCar);
+        response.put("car", newCar);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
@@ -257,36 +263,51 @@ public class CarsServiceImpl implements CarsService{
      * @param dataToUpdate
      * @return ResponseEntity<Map<String, Object>> with the Cars object updated
      */
+
     @Override
     public ResponseEntity<Map<String, Object>> updateASpecificCarDetail(String carId, Map<String, Object> dataToUpdate) {
-         response = new HashMap<>();
+        response = new HashMap<>();
 
-
-        if(validationFields.validateId(carId)){
-            Optional<?> carToBeUpdated = carsRepository.findById(Integer.parseInt(carId));
-            try {
-                if(carToBeUpdated.isPresent()){
-                    Cars newCar = (Cars) carToBeUpdated.get();
-                    dataToUpdate.forEach((key, value) -> {
-                        Field field = ReflectionUtils.findField(Cars.class, key);
-                        if(field != null){
-                            field.setAccessible(true);
-                            ReflectionUtils.setField(field, newCar, value);
-                        }
-                    } );
-                    response.put("car", newCar);
-                    return ResponseEntity.status(HttpStatus.OK).body(response);
-                }else{
-                    throw new EntityNotFoundException("Car not found for the id " + carId );
-                }
-            }catch (EntityNotFoundException e){
-                response.put("message:","Car not found, please provide a existing id");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-        }else{
-            response.put("message:", "Car id invalid, please provide a valid one");
+        if (!validationFields.validateId(carId)) {
+            response.put("message", "Car ID is invalid. Please provide a valid one.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+
+        Optional<Cars> carToBeUpdated = carsRepository.findById(Integer.parseInt(carId));
+        if (carToBeUpdated.isEmpty()) {
+            response.put("message", "Car not found. Please provide an existing ID.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        List<String> validationErrors = validationFields.validateUpdateData(dataToUpdate);
+        if (!validationErrors.isEmpty()) {
+            response.put("message", "Invalid update data: " + String.join(", ", validationErrors));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Cars newCar = carToBeUpdated.get();
+        String originalBrand = dataToUpdate.containsKey("brand") ? dataToUpdate.get("brand").toString() : null;
+
+        if (dataToUpdate.containsKey("brand")) {
+            dataToUpdate.put("brand", defineBrand(originalBrand));
+            dataToUpdate.put("price", definePrice(originalBrand)); // Update price too
+        }
+
+        if (dataToUpdate.containsKey("version")) {
+            dataToUpdate.put("version", defineVersion(dataToUpdate.get("version").toString()));
+        }
+
+        dataToUpdate.forEach((key, value) -> {
+            Field field = ReflectionUtils.findField(Cars.class, key);
+            if (field != null) {
+                field.setAccessible(true);
+                ReflectionUtils.setField(field, newCar, value);
+            }
+        });
+
+        carsRepository.save(newCar);
+        response.put("car", newCar);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**

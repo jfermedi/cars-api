@@ -20,6 +20,12 @@ public class Cars {
      */
     public Cars(){}
 
+    public Cars(Integer id ,String brand, Float price, String version) {
+        this.carId = id;
+        this.brand = brand;
+        this.price = price;
+        this.version = version;
+    }
     /**
      * Constructor method
      * @param brand

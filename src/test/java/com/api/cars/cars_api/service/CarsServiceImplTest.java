@@ -1,5 +1,7 @@
 package com.api.cars.cars_api.service;
 
+import com.api.cars.cars_api.enums.Brands;
+import com.api.cars.cars_api.enums.Version;
 import com.api.cars.cars_api.model.Cars;
 import com.api.cars.cars_api.repository.CarsRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -298,13 +300,139 @@ class CarsServiceImplTest {
 
     @Test
     void deleteAllCars() {
+        List<Cars> carsList = List.of(car, car2, car3, car4);
+        dataToReturn.put("message", "All cars deleted with success");
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+
+        when(carsRepository.findAll()).thenReturn(carsList);
+        dataReturned = carsService.deleteAllCars();
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), dataReturned.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
     }
 
     @Test
+    void deleteAllCarsWithEmptyCarsList(){
+        List<Cars> carsList = new ArrayList<>();
+        dataToReturn.put("message", "There aren't no cars in the database");
+        response = ResponseEntity.status(HttpStatus.NO_CONTENT).body(dataToReturn);
+
+        when(carsRepository.findAll()).thenReturn(carsList);
+        dataReturned = carsService.deleteAllCars();
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+    @Test
     void updateSpecificCar() {
+        Cars carToUpdate = new Cars("3", 35.0f, "4");
+        Optional<Cars> carsOptional = Optional.of(car);
+        dataToReturn.put("car", car);
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+        when(carsRepository.findById(1)).thenReturn(carsOptional);
+        when(carsRepository.save(car)).thenReturn(car);
+
+        dataReturned = carsService.updateSpecificCar("1", carToUpdate);
+        Cars carUpdated = (Cars) dataReturned.getBody().get("car");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("car"), response.getBody().get("car"));
+        assertNotNull(carUpdated);
+        assertEquals(carUpdated.getBrand(), Brands.BMW.name());
+        assertEquals(carUpdated.getPrice(), Brands.BMW.price);
+        assertEquals(carUpdated.getVersion(), Version.SUV.name());
+    }
+
+    @Test
+    void updateSpecificCarWithInvalidCarId(){
+        Cars carToUpdate = new Cars("6", 35.0f, "2");
+        dataToReturn.put("message", "Car ID is invalid. Please provide a valid one.");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        dataReturned = carsService.updateSpecificCar("A", carToUpdate);
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void updateSpecificCarWhenCarToBeUpdatedIsNotFound(){
+        Cars carToUpdate = new Cars("OPEL", 35.0f, "HATCH");
+        dataToReturn.put("message", "Car not found. Please provide an existing carId.");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+
+        when(carsRepository.findById(0)).thenReturn(Optional.empty());
+
+        dataReturned = carsService.updateSpecificCar("0", carToUpdate);
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
     }
 
     @Test
     void updateASpecificCarDetail() {
+        Optional<Cars> carsOptional = Optional.of(car2);
+        Cars carToUpdate = new Cars(2,"7", 30.0f, "4");
+        Map<String, Object> dataToUpdate = new HashMap<>();
+        dataToUpdate.put("brand", "7");
+        dataToReturn.put("car", carToUpdate);
+        response = ResponseEntity.status(HttpStatus.OK).body(dataToReturn);
+
+        when(carsRepository.findById(2)).thenReturn(carsOptional);
+
+        dataReturned = carsService.updateASpecificCarDetail("2", dataToUpdate);
+        Cars carUpdated = (Cars) dataReturned.getBody().get("car");
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertNotNull(carUpdated);
+        assertEquals(carUpdated.getCarId(), carToUpdate.getCarId());
+        assertEquals(carUpdated.getBrand(), Brands.RENAULT.name());
+        assertEquals(carUpdated.getVersion(), Version.SUV.name());
+        assertEquals(carUpdated.getPrice(), Brands.RENAULT.price);
+    }
+
+    @Test
+    void updateASpecificCarDetailWithInvalidCarId(){
+        dataToReturn.put("message", "Car ID is invalid. Please provide a valid one.");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+        Map<String, Object> dataToUpdate = new HashMap<>();
+        dataToUpdate.put("brand", "RENAULT");
+
+        dataReturned = carsService.updateASpecificCarDetail("A", dataToUpdate);
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void updateASpecificCarDetailWhenCarIsNotInTheDatabase(){
+        Optional<Cars> carsOptional = Optional.empty();
+        dataToReturn.put("message","Car not found. Please provide an existing ID.");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+        Map<String, Object> dataToUpdate = new HashMap<>();
+        dataToUpdate.put("brand", "7");
+        when(carsRepository.findById(0)).thenReturn(carsOptional);
+
+        dataReturned = carsService.updateASpecificCarDetail("0", dataToUpdate);
+        assertNotNull(dataToUpdate);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
+    }
+
+    @Test
+    void updateASpecificCarDetailWhenCarDetailKeyIsInvalid(){
+        String invalidKey = "";
+        Optional<Cars> carsOptional = Optional.of(car);
+        dataToReturn.put("message","Invalid update data: Invalid key: ");
+        response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dataToReturn);
+        Map<String, Object> dataToUpdate = new HashMap<>();
+        dataToUpdate.put(invalidKey, "7");
+
+        when(carsRepository.findById(1)).thenReturn(carsOptional);
+
+        dataReturned = carsService.updateASpecificCarDetail("1", dataToUpdate);
+        assertNotNull(dataReturned);
+        assertEquals(dataReturned.getStatusCode(), response.getStatusCode());
+        assertEquals(dataReturned.getBody().get("message"), response.getBody().get("message"));
     }
 }

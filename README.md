@@ -65,9 +65,9 @@ To run this project, you'll need:
 | `GET`       | `/cars/{carId}`     | Retrieve a specific car information based on carId | `carId` (String) | `"car": {"carId": 1,"brand": "RENAULT","price": "22.0","version": "PICKUP"}` |
 | `GET`        | `/cars/brand/{carBrand}`   | Retrieve all cars information based on carBrand | `carBrand` (String) | `["cars": [{"carId": 1,"brand": "RENAULT","price": "22.0","version": "PICKUP"}, {"carId": 2,"brand": "RENAULT","price": "50.0","version": "SPORT"} ...]` |
 | `GET`        | `/cars/version/{carVersion}`   | Retrieve all cars information based on carVersion | `carVersion` (String) | `["cars": [{"carId": 1,"brand": "RENAULT","price": "22.0","version": "PICKUP"}, {"carId": 2,"brand": "MERCEDES","price": "50.0","version": "PICKUP"} ...]` |
-| `POST`       | `/cars/createCar/{carBrand}/{carVersion}`   | Creates a new car an save it on database | `carBrand` (String), `carVersion` (String) | `"car : {"carId:" 4, "brand": "FIAT", "price": 25.0, "version": "PICKUP"}"` |
+| `POST`       | `/cars/createCar/{carBrand}/{carVersion}`   | Creates a new car an save it on database | `carBrand`, "7" (String), `carVersion` ,"5" (String) | `"car : {"carId:" 4, "brand": "FIAT", "price": 25.0, "version": "PICKUP"}"` |
 | `DELETE`     | `cars/deleteCar/{carId}` | Deletes a car information based on carId | `carId` (String) | `Car deleted with success` |
-| `DELETE`     | `cars/deleteAllCars` | Deletes all cars information  | `None | `All cars deleted with success` |
+| `DELETE`     | `cars/deleteAllCars` | Deletes all cars information  | None | `All cars deleted with success` |
 | `PUT`        | `cars/updateCar/{carId}` | Updates a car information based on carId |   `carId` (String), `carToUpdate` (Cars) `{"brand": "1","version": "5"}` | `"car": {"carId": 5, "brand": "OPEL", "price": 18.0, "version": "SUV"}` |
 | `PATCH`      | `cars/updateCarPart/{carId}` | Updates partially a car information based on carId | `carId` (String), `dataToUpdate` (Map<String, Object>) `"version": "3"` | `"car": {"carId": 5, "brand": "OPEL", "price": 18.0, "version": "SPORT" }` |
 
